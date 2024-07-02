@@ -1,23 +1,32 @@
-name: Render documents and upload
-
 on:
   workflow_dispatch:
-jobs:
-  render_document:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Set up Git repository
-    - uses: actions/checkout@v2
 
-    - name: Render document
-    	uses: lc5415/rmarkdown-action@v1
-    	with:
-    		input_file: scripts/Sample.Rmd
-    		output_format: word_document
-      - name: commit files
-      run: |
-    git config --local user.name "$GITHUB_ACTOR"
-    git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
-    git add -A
-    git commit -m "Saving the results" || echo "no changes to commit"
-    git push origin || echo "no changes to commit"
+name: Render documents
+
+jobs:
+  render-rmarkdown:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+      
+      - name: Install packages, render Rmarkdown Readme file and Commit Results
+        run: |
+          echo "Rendering the page..."
+          Rscript -e 'install.packages(c("knitr", "rmarkdown"))'
+          Rscript -e 'rmarkdown::render(input = "scripts/Sample.Rmd")'
+          if [[ "$(git status --porcelain)" != "" ]]; then
+            git config --local user.name "$GITHUB_ACTOR"
+            git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
+            git add *
+            git commit -m "Auto update Report"
+            git push origin
+          fi
