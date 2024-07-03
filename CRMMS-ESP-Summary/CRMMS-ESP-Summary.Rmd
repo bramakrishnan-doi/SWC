@@ -38,8 +38,8 @@ library(tidyr)
 library(reshape2)
 library(ggpattern)
 
-Last_month_file <- "CRMMS-ESP-Summary/PreviousMonth/EnsembleOutput.xlsx"       #In file path use either / or \\, do NOT use \
-Current_month_file <- "CRMMS-ESP-Summary/CurrentMonth/EnsembleOutput.xlsx"
+Last_month_file <- "PreviousMonth/EnsembleOutput.xlsx"       #In file path use either / or \\, do NOT use \
+Current_month_file <- "CurrentMonth/EnsembleOutput.xlsx"
 
 EOCY <- "2024-12-01"            #EOCY for Powell/Mead elevation ranges in summary points.
 PowellOT_WYrn <- "2025-01-01"   #WY for Powell Operating Tier and Release Volume tables.
