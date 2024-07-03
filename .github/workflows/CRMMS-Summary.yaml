@@ -1,7 +1,7 @@
 on:
   workflow_dispatch:
   
-name: 07-rhdb-test
+name: CRMMS Summary
 
 jobs:
   run-r-script:
@@ -26,7 +26,7 @@ jobs:
             any::ggpattern
             any::knitr
             any::rmarkdown
-            
+
     - uses: r-lib/actions/setup-pandoc@v2
     
     - name: run-script
