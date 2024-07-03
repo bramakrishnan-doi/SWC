@@ -1,9 +1,8 @@
 ---
-title: "Untitled (Note: This is a still a work in progress and also MS Word suuuuuucks."
-author: "Steven V. Miller"
-output:
-  word_document:
-    reference_docx: ../svm-rmarkdown-word.docx
+title: "Test MS Word Doc"
+author: "Balaji Ramakrishnan"
+output: word_document
+   
 ---
 
 ```{r setup, include=FALSE}
