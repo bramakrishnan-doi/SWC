@@ -23,6 +23,7 @@ jobs:
             any::lubridate
             any::scales
             any::zoo
+            any::magick
           
       - name: Install remotes
         run: |
