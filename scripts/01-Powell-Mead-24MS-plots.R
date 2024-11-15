@@ -510,7 +510,7 @@ gg <-
 
 # crssplot:::add_logo_vertical(gg, .87, .01, .97, .13) # add usbr logo
 
-ggsave(here::here("Mead24MS.png"), 
+ggsave("Mead24MS.png", 
        width = 11, height = 8)
 
 crmms_m <- image_read("Mead24MS.png")
