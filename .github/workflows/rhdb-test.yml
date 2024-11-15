@@ -37,8 +37,8 @@ jobs:
         run: Rscript scripts/01-Powell-Mead-24MS-plots.R
 
       - name: get dir
-         run: |
-           ls
+        run: |
+          ls
         
       - name: commit files
         run: |
