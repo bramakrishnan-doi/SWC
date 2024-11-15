@@ -431,8 +431,8 @@ gg <-
     labels = scales::comma, breaks = m_breaks, minor_breaks = m_breaks2,
     limits = yy, expand = c(0,0),
     sec.axis = sec_axis(
-      ~CRSSIO::elevation_to_storage(., "mead"),
-      breaks = CRSSIO::elevation_to_storage(m_breaks, "mead"),
+      ~elevation_to_storage(., "mead"),
+      breaks = elevation_to_storage(m_breaks, "mead"),
       labels = scales::comma_format(scale = 1/1000000, accuracy = 0.01),
       name = "Storage (maf)"
     )
