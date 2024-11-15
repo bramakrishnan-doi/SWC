@@ -113,9 +113,11 @@ df_hist2 = df_hist %>%
 df_initAdd = left_join(df_init, df_hist2, by = 'slot')
 df_24MS <- rbind(df_hdb, df_initAdd)
 
+df_24MS <- arrange(df_24MS, desc(Trace))
+
 ## Add historical data to 24MS df
-df_24MS = rbind(df_24MS, df_hist)
-df_24MS = arrange(df_24MS,Trace)
+df_24MS = rbind(df_hist, df_24MS)
+# df_24MS = arrange(df_24MS,desc(Trace))
 
 
 
@@ -229,7 +231,7 @@ cloud_color <- '#DDCBA4'#'grey85'
 
 df_24MS_m = df_24MS %>% mutate(trace_labels = lab_names[Trace])
 
-df_24MS_m$trace_labels = factor(df_24MS_m$trace_labels,levels = lab_names[c(4,1,2,3)]) 
+df_24MS_m$trace_labels = factor(df_24MS_m$trace_labels,levels = lab_names[c(1,2,3,4)]) 
 
 # Create cloud range
 cloud_name = '24MS Projections Range'
@@ -319,10 +321,14 @@ gg <-
             aes(x = Date, y = value, color = trace_labels, 
                 alpha = trace_labels, group = trace_labels,
                 linetype = trace_labels, size = trace_labels)) +
-  scale_color_manual(values = custom_colors) +
-  scale_linetype_manual(values = custom_lt) +
-  scale_size_manual(values = custom_size) +
-  scale_alpha_manual(values = custom_alpha) +
+  scale_color_manual(values = custom_colors,
+                     breaks = lab_names) +
+  scale_linetype_manual(values = custom_lt,
+                        breaks = lab_names) +
+  scale_size_manual(values = custom_size,
+                    breaks = lab_names) +
+  scale_alpha_manual(values = custom_alpha,
+                     breaks = lab_names) +
   scale_x_yearmon(expand = c(0,0), breaks = unique(df_24MS$Date),
                   minor_breaks = unique(df_24MS$Date),
                   limits = c(min(df_24MS$Date), max(df_24MS$Date))) +
@@ -414,16 +420,19 @@ gg <-
   scale_fill_discrete(breaks = c(''), type = cloud_color) + #type = cloud_color) +
   geom_ribbon(aes(ymin = cloud.min, ymax = cloud.max), alpha = 0.2) +
   # ggplot(df_24MS, aes(x = Date)) +
-
+  
   geom_line(data = df_24MS_m, 
             aes(x = Date, y = value, color = trace_labels, 
                 alpha = trace_labels, group = trace_labels,
                 linetype = trace_labels, size = trace_labels)) +
- 
-  scale_color_manual(values = custom_colors) +
-  scale_linetype_manual(values = custom_lt) +
-  scale_size_manual(values = custom_size) +
-  scale_alpha_manual(values = custom_alpha) +
+  scale_color_manual(values = custom_colors,
+                     breaks = lab_names) +
+  scale_linetype_manual(values = custom_lt,
+                        breaks = lab_names) +
+  scale_size_manual(values = custom_size,
+                    breaks = lab_names) +
+  scale_alpha_manual(values = custom_alpha,
+                     breaks = lab_names) +
   scale_x_yearmon(expand = c(0,0), breaks = unique(df_24MS$Date),
                   minor_breaks = unique(df_24MS$Date),
                   limits = c(min(df_24MS$Date), max(df_24MS$Date))) +
@@ -443,7 +452,7 @@ gg <-
        title = bquote('Lake Mead End-of-Month'~Elevations),
        subtitle = paste('Projections from', month_heading, '24-Month Study Inflow Scenarios'),
        #caption = "The Drought Response Operations Agreement (DROA) is available online at https://www.usbr.gov/dcp/finaldocs.html.                  "
-       ) +
+  ) +
   # tier stuff
   geom_hline(
     yintercept = c(1110, 1090, 1045), 
@@ -494,7 +503,7 @@ gg <-
          color = guide_legend(nrow = 5, order = 1),
          linetype = guide_legend(nrow = 5, order = 1),
          size = guide_legend(nrow = 5, order = 1)
-          #, fill = guide_legend(order = 1)
+         #, fill = guide_legend(order = 1)
   ) +
   theme(
     axis.text.x = element_text(angle = 90, vjust = 0.5), 
@@ -507,8 +516,6 @@ gg <-
     plot.caption = element_text(hjust = 0, size = 10, face = "italic"),
     legend.text = element_text(size=10)
   )
-
-# crssplot:::add_logo_vertical(gg, .87, .01, .97, .13) # add usbr logo
 
 ggsave("Mead24MS.png", 
        width = 11, height = 8)
