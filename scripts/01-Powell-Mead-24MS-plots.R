@@ -4,16 +4,16 @@ library(lubridate)
 library(zoo)
 
 ## 24-MS MRIDs & Date - UPDATE!
-run_date = c('2024-05')
+run_date = c('2024-11')
 
-most_mrid <- 3253
-min_mrid <- 3254
-max_mrid <- 3255
+most_mrid <- 3269
+min_mrid <- 3270
+max_mrid <- 3268
 
 ## 24MS Run Date - UPDATE!
-most_run_date = c('2024-05')
-min_run_date = c('2024-05')
-max_run_date = c('2024-05')
+most_run_date = c('2024-11')
+min_run_date = c('2024-11')
+max_run_date = c('2024-10')
 
 ## UPDATE! this to add "DROA" to legend. T = add "DROA", F = don't add "DROA"
 maxLab_droa = F
