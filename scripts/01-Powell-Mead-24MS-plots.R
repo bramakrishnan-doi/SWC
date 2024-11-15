@@ -404,3 +404,117 @@ crmms_p <- image_read("Powell24MS.png")
 test_plot <- image_composite(crmms_p,image_resize(logo_raw,"325"),offset = "+2860+2060")
 image_write(test_plot, "Powell24MS.png")
 image_write(image_convert(test_plot, format = "pdf"), "Powell24MS.pdf")
+
+## Mead -------------------------------------------------------------------------
+m_breaks <- seq(900, 1250, 25)
+m_breaks2 <- seq(900, 1250, 5)
+yy <- c(1000, 1125) # NULL for default ylimit
+gg <-
+  ggplot(df_stat_m, aes(x = Date, fill = Cloud)) +
+  scale_fill_discrete(breaks = c(''), type = cloud_color) + #type = cloud_color) +
+  geom_ribbon(aes(ymin = cloud.min, ymax = cloud.max), alpha = 0.2) +
+  # ggplot(df_24MS, aes(x = Date)) +
+
+  geom_line(data = df_24MS_m, 
+            aes(x = Date, y = value, color = trace_labels, 
+                alpha = trace_labels, group = trace_labels,
+                linetype = trace_labels, size = trace_labels)) +
+ 
+  scale_color_manual(values = custom_colors) +
+  scale_linetype_manual(values = custom_lt) +
+  scale_size_manual(values = custom_size) +
+  scale_alpha_manual(values = custom_alpha) +
+  scale_x_yearmon(expand = c(0,0), breaks = unique(df_24MS$Date),
+                  minor_breaks = unique(df_24MS$Date),
+                  limits = c(min(df_24MS$Date), max(df_24MS$Date))) +
+  scale_y_continuous(
+    labels = scales::comma, breaks = m_breaks, minor_breaks = m_breaks2,
+    limits = yy, expand = c(0,0),
+    sec.axis = sec_axis(
+      ~CRSSIO::elevation_to_storage(., "mead"),
+      breaks = CRSSIO::elevation_to_storage(m_breaks, "mead"),
+      labels = scales::comma_format(scale = 1/1000000, accuracy = 0.01),
+      name = "Storage (maf)"
+    )
+  ) +
+  labs(y = "Pool Elevation (ft)", x = NULL, color = NULL, linetype = NULL,
+       size = NULL,
+       fill = NULL,
+       title = bquote('Lake Mead End-of-Month'~Elevations),
+       subtitle = paste('Projections from', month_heading, '24-Month Study Inflow Scenarios'),
+       #caption = "The Drought Response Operations Agreement (DROA) is available online at https://www.usbr.gov/dcp/finaldocs.html.                  "
+       ) +
+  # tier stuff
+  geom_hline(
+    yintercept = c(1110, 1090, 1045), 
+    colour = 'black', linetype = 'dashed'
+  ) +
+  geom_hline(yintercept = c(1145, 1075, 1050, 1025), color = "black", linetype = 1) +
+  annotate("text", x = as.yearmon(ym(run_date) - months(6)),
+           y=1147.5, label="Surplus Condition (>1,145')", angle=00, size=3, hjust = 0) +
+  annotate("text", x = as.yearmon(ym(run_date) - months(6)),
+           y=1100, label="Normal Condition\n(1,075' to 1,145')", 
+           angle=00, size=3, hjust = 0) +
+  annotate("text", x = as.yearmon(ym(run_date)),
+           y=1107, label="Elevation 1,110 ft",
+           angle=00, size=3, hjust = 0) +
+  annotate("text", x = as.yearmon(ym(run_date)),
+           y=1087, label="Elevation 1,090 ft",
+           angle=00, size=3, hjust = 0) +
+  annotate("text", x = as.yearmon(ym(run_date)),
+           y=1042, label="Elevation 1,045 ft",
+           angle=00, size=3, hjust = 0) +
+  # annotate("text", x = as.yearmon(ym(run_date) - months(5)),
+  #          y=1083, label="Drought Contingency Plan Contributions\n(<1,090')",
+  #          angle=00, size=3, hjust = 0) +
+  # annotate("text", x = as.yearmon(ym(run_date) - months(6)),
+  #          y=1063, label="Shortage Condition\n(<1,075')",
+  #          angle=00, size=3, hjust = 0) +
+  annotate("text", x = as.yearmon(ym(run_date) - months(6)),
+           y=1060, label="Level 1 Shortage Condition\n(1,050' to 1,075')",
+           angle=00, size=3, hjust = 0) +
+  annotate("text", x = as.yearmon(ym(run_date) - months(6)),
+           y=1037, label="Level 2 Shortage Condition\n(1,025' to 1,050')",
+           angle=00, size=3, hjust = 0) +
+  annotate("text", x = as.yearmon(ym(run_date) - months(6)),
+           y=1015, label="Level 3 Shortage Condition\n(<1,025')",
+           angle=00, size=3, hjust = 0) +
+  geom_vline(
+    xintercept = as.yearmon(c("Dec 2024", "Dec 2025")),
+    size = 1, color = "#ffdc70",  #"#ffdc70" or "grey45"
+    alpha = 0.8
+  ) +
+  geom_vline(
+    xintercept = as.yearmon(ym(run_date) %m-% months(1)),
+    size = 1, color = "black"  #"#ffdc70" or "grey45"
+    # alpha = 0.8
+  ) +
+  theme_bw(base_size = 14) +
+  guides(alpha = 'none',
+         color = guide_legend(nrow = 5, order = 1),
+         linetype = guide_legend(nrow = 5, order = 1),
+         size = guide_legend(nrow = 5, order = 1)
+          #, fill = guide_legend(order = 1)
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5), 
+    legend.position = "bottom",
+    legend.justification = "left",
+    legend.key.width = unit(1.2, "cm"),
+    plot.margin = unit(c(0.2,1,1,1), "cm"),
+    plot.title = element_text(face="bold", hjust = 0.5, size = 14,margin=margin(5,0,0,0)),
+    plot.subtitle = element_text(hjust = 0.5, size = 13, margin=margin(5,0,5,0)),
+    plot.caption = element_text(hjust = 0, size = 10, face = "italic"),
+    legend.text = element_text(size=10)
+  )
+
+# crssplot:::add_logo_vertical(gg, .87, .01, .97, .13) # add usbr logo
+
+ggsave(here::here("Mead24MS.png"), 
+       width = 11, height = 8)
+
+crmms_m <- image_read("Mead24MS.png")
+logo_raw <- image_read("https://www.usbr.gov/lc/region/g4000/BofR-vert.png")
+test_plot <- image_composite(crmms_m,image_resize(logo_raw,"325"),offset = "+2860+2060")
+image_write(test_plot, "Mead24MS.png")
+image_write(image_convert(test_plot, format = "pdf"), "Mead24MS.pdf")
