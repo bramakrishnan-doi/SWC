@@ -34,7 +34,11 @@ jobs:
           Rscript -e "remotes::install_github('BoulderCodeHub/rhdb', ref='v0.3.0')"
           
       - name: run-script
-        run: Rscript scripts/01-Powell-Mead-24MS-plots.R        
+        run: Rscript scripts/01-Powell-Mead-24MS-plots.R
+
+      - name: get dir
+         run: |
+           ls
         
       - name: commit files
         run: |
