@@ -399,8 +399,8 @@ gg <-
 
 print("Saving Powell Plot:")
 ggsave("Powell24MS.png", width = 11, height = 8)
-crmmsp <- image_read("Powell24MS.png")
 logo_raw <- image_read("https://www.usbr.gov/lc/region/g4000/BofR-vert.png")
+crmmsp <- image_read("Powell24MS.png")
 test_plot <- image_composite(crmms_p,image_resize(logo_raw,"325"),offset = "+2860+2060")
 image_write(test_plot, "Powell24MS.png")
 image_write(image_convert(test_plot, format = "pdf"), "Powell24MS.pdf")
