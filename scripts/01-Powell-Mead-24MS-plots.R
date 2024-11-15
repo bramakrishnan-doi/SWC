@@ -2,6 +2,7 @@ library(rhdb)
 library(tidyverse)
 library(lubridate)
 library(zoo)
+library(magick)
 
 ## 24-MS MRIDs & Date - UPDATE!
 run_date = c('2024-11')
@@ -17,7 +18,7 @@ max_run_date = c('2024-10')
 
 ## UPDATE! this to add "DROA" to legend. T = add "DROA", F = don't add "DROA"
 maxLab_droa = F
-minLab_droa = F
+minLab_droa = T
 
 ## Get month names for chart subheading
 if (month(ym(most_run_date)) == month(ym(max_run_date))) {
@@ -398,3 +399,8 @@ gg <-
 
 print("Saving Powell Plot:")
 ggsave("Powell24MS.png", width = 11, height = 8)
+crmmsp <- image_read("Powell24MS.png")
+logo_raw <- image_read("https://www.usbr.gov/lc/region/g4000/BofR-vert.png")
+test_plot <- image_composite(crmms_p,image_resize(logo_raw,"325"),offset = "+2860+2060")
+image_write(test_plot, "Powell24MS.png")
+image_write(image_convert(test_plot, format = "pdf"), "Powell24MS.pdf")
