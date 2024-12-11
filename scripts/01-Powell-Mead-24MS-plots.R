@@ -480,7 +480,7 @@ gg <-
   #          y=1063, label="Shortage Condition\n(<1,075')",
   #          angle=00, size=3, hjust = 0) +
   annotate("text", x = as.yearmon(ym(run_date) - months(6)),
-           y=1060, label="Level 1 Shortage Condition\n(1,050' to 1,075')",
+           y=1070, label="Level 1 Shortage Condition\n(1,050' to 1,075')",
            angle=00, size=3, hjust = 0) +
   annotate("text", x = as.yearmon(ym(run_date) - months(6)),
            y=1037, label="Level 2 Shortage Condition\n(1,025' to 1,050')",
