@@ -5,15 +5,15 @@ library(zoo)
 library(magick)
 
 ## 24-MS MRIDs & Date - UPDATE!
-run_date = c('2024-11')
+run_date = c('2024-12')
 
-most_mrid <- 3269
-min_mrid <- 3270
+most_mrid <- 3271
+min_mrid <- 3272
 max_mrid <- 3268
 
 ## 24MS Run Date - UPDATE!
-most_run_date = c('2024-11')
-min_run_date = c('2024-11')
+most_run_date = c('2024-12')
+min_run_date = c('2024-12')
 max_run_date = c('2024-10')
 
 ## UPDATE! this to add "DROA" to legend. T = add "DROA", F = don't add "DROA"
