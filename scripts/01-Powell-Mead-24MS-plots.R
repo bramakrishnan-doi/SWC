@@ -373,13 +373,13 @@ gg <-
   annotate("text", x = as.yearmon(ym(most_run_date) - months(6)),
            y=3670, label="Equalization Tier (ET)", angle=00, size=3, hjust = 0) +
   annotate("text", x = as.yearmon(ym(most_run_date) - months(6)),
-           y=3620, label="Upper Elevation Balancing Tier\n(3,575' to ET)", 
+           y=3620, label="Upper Elevation Balancing\nTier (3,575' to ET)", 
            angle=00, size=3, hjust = 0) +
   annotate("text", x = as.yearmon(ym(most_run_date) - months(6)),
            y=3544, label="Mid-Elevation Release Tier\n(3,525' to 3,575')", 
            angle=00, size=3, hjust = 0) +
   annotate("text", x = as.yearmon(ym(most_run_date) - months(6)),
-           y=3510, label="Lower Elevation Balancing Tier\n(<3,525')", 
+           y=3510, label="Lower Elevation Balancing\nTier (<3,525')", 
            angle=00, size=3, hjust = 0) +
   annotate("text", x = as.yearmon(ym(most_run_date) - months(6)),
            y=3477, label="Minimum Power Pool\n(3,490')", 
