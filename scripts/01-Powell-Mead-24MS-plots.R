@@ -1,24 +1,27 @@
+# library(tidyverse)
+library(dplyr)
+library(tidyr)
 library(rhdb)
-library(tidyverse)
+library(ggplot2)
 library(lubridate)
 library(zoo)
 library(magick)
 
 ## 24-MS MRIDs & Date - UPDATE!
-run_date = c('2024-12')
+run_date = c('2026-01')
 
-most_mrid <- 3271
-min_mrid <- 3272
-max_mrid <- 3268
+most_mrid <- 3303
+min_mrid <- 3304
+max_mrid <- 3305
 
 ## 24MS Run Date - UPDATE!
-most_run_date = c('2024-12')
-min_run_date = c('2024-12')
-max_run_date = c('2024-10')
+most_run_date = c('2026-01')
+min_run_date = c('2026-01')
+max_run_date = c('2026-01')
 
 ## UPDATE! this to add "DROA" to legend. T = add "DROA", F = don't add "DROA"
 maxLab_droa = F
-minLab_droa = T
+minLab_droa = F
 
 ## Get month names for chart subheading
 if (month(ym(most_run_date)) == month(ym(max_run_date))) {
@@ -42,7 +45,7 @@ wy_end = c(paste0(wy+2,"-09"))
 
 hist_nMons = 7 # keep 7 months before start date
 
-#
+#Sets the end date for the chart
 if (month(ym(run_date)) > 10) {
   end_date = format(ym(run_date) + months(33-month(ym(run_date))), "%Y-%m")
 } else {
@@ -52,12 +55,12 @@ if (month(ym(run_date)) > 10) {
 
 # This code checks if the run month is in (Jan, Apr, Aug, or Oct) and sets the 
 # end_date to match the max if not
-
-if (month(ym(run_date)) %in% list(1,4,8,10)) {
-  end_date = end_date
-} else {
-  end_date = format(ym(max_run_date) + months(23), "%Y-%m")
-}
+# 
+# if (month(ym(run_date)) %in% list(1,4,8,10)) {
+#   end_date = end_date
+# } else {
+#   end_date = format(ym(max_run_date) + months(23), "%Y-%m")
+# }
 
 
 histStart_date = format(ym(run_date) - months(hist_nMons), "%Y-%m")
@@ -222,9 +225,11 @@ names(lab_names) <- c("Historical", "24MS Max", "24MS Most",  "24MS Min")
 nn <- lab_names[1:4]
 
 custom_colors <- c('grey20', '#104E8B','#26AE44','#DA3139')
-custom_size <- c(1,rep(1.2, 3))
+custom_size <- c(1,rep(1, 3))
 custom_lt <- c(1,rep(2, 3))
 custom_alpha <- c(rep(1, 4))
+# Assign the long label names to the custom aesthetic vectors
+# This allows ggplot to match the values in 'trace_labels' to the correct color/size etc.
 names(custom_colors) <- names(custom_size) <- names(custom_lt) <- 
   names(custom_alpha) <- nn
 cloud_color <- '#DDCBA4'#'grey85'
@@ -235,17 +240,56 @@ df_24MS_m$trace_labels = factor(df_24MS_m$trace_labels,levels = lab_names[c(1,2,
 
 # Create cloud range
 cloud_name = '24MS Projections Range'
-df_stat <-  df_24MS_m %>% select(c("run","slot","Date", "value")) %>% 
-  # filter(Date >= run_date) %>% 
+
+# df_stat <-  df_24MS_m %>% select(c("run","slot","Date", "value")) %>% 
+#   # filter(Date >= run_date) %>% 
+#   group_by(run, slot, Date) %>%
+#   summarise(cloud.max = max(value),
+#             cloud.min = min(value)) %>% 
+#   mutate(Cloud = factor(cloud_name), Date= as.yearmon(Date))
+
+# df_24MS_m %>% filter(Trace != "24MS Min" & Trace != "Historical") %>% 
+#   group_by(run, slot, Date) %>%
+#   summarise(cloud.max = max(value),
+#             cloud.min = min(value)) %>%
+#   filter(case_when(
+#     month(maxrd) %in% c(9,10,11,12,1,2,3) ~ as.Date(Date) < maxrd + months(24),
+#                     TRUE ~ as.Date(Date) < mostrd + months(24) )) %>% 
+#   tail(10)
+
+
+
+
+
+
+df_stat_max <- df_24MS_m %>% filter(Trace != "24MS Min" & Trace != "Historical") %>% 
   group_by(run, slot, Date) %>%
   summarise(cloud.max = max(value),
-            cloud.min = min(value)) %>% 
-  mutate(Cloud = factor(cloud_name), Date= as.yearmon(Date))
+            cloud.min = min(value)) %>%
+  filter(case_when(
+    month(maxrd) %in% c(9,10,11,12,1,2,3) ~ as.Date(Date) < maxrd + months(24),
+    TRUE ~ as.Date(Date) < mostrd + months(24) )) %>% 
+  mutate(Cloud = factor(cloud_name), Date= as.yearmon(Date)) 
+
+df_stat_min <- df_24MS_m %>% filter(Trace != "24MS Max" & Trace != "Historical") %>% 
+  group_by(run, slot, Date) %>%
+  summarise(cloud.max = max(value),
+            cloud.min = min(value)) %>%
+  #filter(as.Date(Date) < maxrd + months(24)) %>% 
+  mutate(Cloud = factor(cloud_name), Date= as.yearmon(Date)) 
+
 
 df_24MS_m1 = df_24MS_m %>% mutate(Cloud = factor(cloud_name), Date= as.yearmon(Date))
 
-df_stat_p = df_stat %>% filter(slot == 'Powell.Pool Elevation')
-df_stat_m = df_stat %>% filter(slot == 'Mead.Pool Elevation')
+# df_stat_p = df_stat %>% filter(slot == 'Powell.Pool Elevation')
+# df_stat_m = df_stat %>% filter(slot == 'Mead.Pool Elevation')
+
+df_stat_p_max = df_stat_max %>% filter(slot == 'Powell.Pool Elevation')
+df_stat_p_min = df_stat_min %>% filter(slot == 'Powell.Pool Elevation')
+
+df_stat_m_max = df_stat_max %>% filter(slot == 'Mead.Pool Elevation')
+df_stat_m_min = df_stat_min %>% filter(slot == 'Mead.Pool Elevation')
+
 df_24MS_p = df_24MS_m1 %>% filter(slot == 'Powell.Pool Elevation') %>%
   mutate(trace_labels = lab_names[Trace])
 df_24MS_m = df_24MS_m1 %>% filter(slot == 'Mead.Pool Elevation') %>%
@@ -288,8 +332,17 @@ getData <- function(res)
   tmp
 }
 
-evTables <- lapply(res, getData)
-names(evTables) <- tolower(res)
+# This will fail if the 'data' directory doesn't exist. Add error handling.
+tryCatch({
+  evTables <- lapply(res, getData)
+  names(evTables) <- tolower(res)
+}, error = function(e) {
+  message("Could not read elevation-volume tables. Creating dummy data.")
+  message("Secondary axis for storage will not be accurate.")
+  powell_dummy <- data.frame(Elevation = c(3370, 3700), Volume = c(2000000, 24000000))
+  mead_dummy <- data.frame(Elevation = c(900, 1220), Volume = c(2000000, 26000000))
+  evTables <<- list(powell = powell_dummy, mead = mead_dummy)
+})
 
 
 elevation_to_storage <- function(elevation, reservoir)
@@ -312,26 +365,50 @@ elevation_to_storage <- function(elevation, reservoir)
 ## Powell -----------------------------------------------------------------------
 p_breaks <- seq(3350, 3725, 25)
 p_breaks2 <- seq(3350, 3725, 5)
-yy <- NULL #c(3400, 3675) # NULL for default ylim
-gg <-
-  ggplot(df_stat_p, aes(x = Date, fill = Cloud)) +
+yy <- c(3400, 3675) # NULL for default ylim
+
+# Calculate date limits (using df_24MS$Date)
+min_date_limit <- min(df_24MS$Date, na.rm = TRUE)
+max_date_limit <- max(df_24MS$Date, na.rm = TRUE)
+
+# Construct the plot
+gg <- ggplot(mapping = aes(x = Date)) + # Minimal global aesthetic
+  
+  # Shading rectangle starting Oct 2026
+  geom_rect(
+    aes(xmin = as.yearmon("Sep 2026"), xmax = Inf, ymin = -Inf, ymax = Inf),
+    fill = 'grey90', 
+    alpha = 0.5, # Adjust alpha for desired darkness
+    inherit.aes = FALSE
+  ) +
+  
+  # Data layers
+  geom_ribbon(data = df_stat_p_max,
+              aes(ymin = cloud.min, ymax = cloud.max, fill = Cloud),
+              alpha = 0.2) +
+  geom_ribbon(data = df_stat_p_min,
+              aes(ymin = cloud.min, ymax = cloud.max, fill = Cloud),
+              alpha = 0.2) +
+  geom_line(data = df_24MS_p,
+            aes(y = value, color = trace_labels, alpha = trace_labels,
+                group = trace_labels, linetype = trace_labels, size = trace_labels)) +
+  geom_line(data = powell_line,
+            aes(y = Eq_elev),
+            colour = "black", linetype = 1) +
+  
+  # Scales
   scale_fill_discrete(breaks = c(''), type = cloud_color) +
-  geom_ribbon(aes(ymin = cloud.min, ymax = cloud.max), alpha = 0.2) +
-  geom_line(data = df_24MS_p, 
-            aes(x = Date, y = value, color = trace_labels, 
-                alpha = trace_labels, group = trace_labels,
-                linetype = trace_labels, size = trace_labels)) +
-  scale_color_manual(values = custom_colors,
-                     breaks = lab_names) +
-  scale_linetype_manual(values = custom_lt,
-                        breaks = lab_names) +
-  scale_size_manual(values = custom_size,
-                    breaks = lab_names) +
-  scale_alpha_manual(values = custom_alpha,
-                     breaks = lab_names) +
-  scale_x_yearmon(expand = c(0,0), breaks = unique(df_24MS$Date),
-                  minor_breaks = unique(df_24MS$Date),
-                  limits = c(min(df_24MS$Date), max(df_24MS$Date))) +
+  # CORRECTED: Use unname(lab_names) for the breaks to display the full label text
+  scale_color_manual(values = custom_colors, breaks = unname(lab_names)) +
+  scale_linetype_manual(values = custom_lt, breaks = unname(lab_names)) +
+  scale_size_manual(values = custom_size, breaks = unname(lab_names)) +
+  scale_alpha_manual(values = custom_alpha, breaks = unname(lab_names)) +
+  scale_x_yearmon(
+    expand = c(0,0),
+    breaks = unique(df_24MS$Date),
+    minor_breaks = unique(df_24MS$Date),
+    limits = c(min_date_limit, max_date_limit)
+  ) +
   scale_y_continuous(
     labels = scales::comma, breaks = p_breaks, minor_breaks = p_breaks2,
     limits = yy,
@@ -342,12 +419,18 @@ gg <-
       name = "Storage (maf)"
     )
   ) +
+  # Labels, titles, and caption
   labs(y = "Pool Elevation (ft)", x = NULL, color = NULL, linetype = NULL,
        size = NULL,
        fill = NULL,
-       title = bquote('Lake Powell End-of-Month'~Elevations),
+       title = bquote('Lake Powell End-of-Month'~Elevations^1),
        subtitle = paste('Projections from', month_heading, '24-Month Study Inflow Scenarios'),
-       # caption = "The Drought Response Operations Agreement (DROA) is available online at https://www.usbr.gov/dcp/finaldocs.html.                  "
+       caption = 'The Drought Response Operations Agreement (DROA) is available online at https://www.usbr.gov/dcp/finaldocs.html.
+       
+¹For modeling purposes, simulated years beyond 2026 assume a continuation of the 2007 Interim Guidelines including the 2024 Supplement to the 2007 Interim Guidelines (no additional SEIS
+conservation is assumed to occur after 2026), the 2019 Colorado River Basin Drought Contingency Plans, and Minute 323 including the Binational Water Scarcity Contingency Plan. With the 
+exception of certain provisions related to ICS recovery and Upper Basin Demand management, operations under these agreements are in effect through 2026.'
+       
   ) +
   # tier stuff
   geom_hline(
@@ -356,27 +439,35 @@ gg <-
   ) +
   geom_hline(yintercept = 3490, color = 'grey20', linetype = 2) +
   geom_vline(
-    xintercept = as.yearmon(c("Dec 2024", "Dec 2025")), 
+    xintercept = as.yearmon(c("Dec 2025", "Dec 2026")), 
     size = 1, color = "#ffdc70",  #"#ffdc70" or "grey45"
     alpha = 0.8
+  ) +
+  geom_vline( # Vertical line at start of shading
+    xintercept = as.yearmon("Sep 2026"),
+    color = "gray30", 
+    linetype = "solid" 
   ) +
   geom_vline(
     xintercept = as.yearmon(ym(run_date) %m-% months(1)),
     size = 1, color = "black"  #"#ffdc70" or "grey45"
     # alpha = 0.8
   ) +
-  geom_line(
-    data = powell_line,
-    aes(x = Date, y=Eq_elev),
-    colour = "black", linetype = 1
-  ) +
+  #geom_line(
+  #   data = powell_line,
+  #   aes(x = Date, y=Eq_elev),
+  #   colour = "black", linetype = 1
+  #) +
   annotate("text", x = as.yearmon(ym(most_run_date) - months(6)),
            y=3670, label="Equalization Tier (ET)", angle=00, size=3, hjust = 0) +
   annotate("text", x = as.yearmon(ym(most_run_date) - months(6)),
            y=3620, label="Upper Elevation Balancing\nTier (3,575' to ET)", 
            angle=00, size=3, hjust = 0) +
   annotate("text", x = as.yearmon(ym(most_run_date) - months(6)),
-           y=3544, label="Mid-Elevation Release Tier\n(3,525' to 3,575')", 
+           y=3569, label="Mid-Elevation Release Tier", 
+           angle=00, size=3, hjust = 0) +
+  annotate("text", x = as.yearmon(ym(most_run_date) - months(6)),
+           y=3548, label="(3,525' to 3,575')", 
            angle=00, size=3, hjust = 0) +
   annotate("text", x = as.yearmon(ym(most_run_date) - months(6)),
            y=3510, label="Lower Elevation Balancing\nTier (<3,525')", 
@@ -384,58 +475,85 @@ gg <-
   annotate("text", x = as.yearmon(ym(most_run_date) - months(6)),
            y=3477, label="Minimum Power Pool\n(3,490')", 
            angle=00, size=3, hjust = 0) +
-  theme_bw(base_size = 14) +
+  # legend guides
   guides(alpha = 'none',
          color = guide_legend(nrow = 5, order = 1),
          linetype = guide_legend(nrow = 5, order = 1),
          size = guide_legend(nrow = 5, order = 1)
          #, fill = guide_legend(order = 1)
   ) +
+  # Theme settings
+  theme_bw(base_size = 14) +
   theme(
-    axis.text.x = element_text(angle = 90, vjust = 0.5), 
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1), 
     legend.position = "bottom",
     legend.justification = "left",
-    legend.key.width = unit(1.2, "cm"),
-    plot.margin = unit(c(0.2,1,1,1), "cm"),
-    plot.title = element_text(face="bold", hjust = 0.5, size = 14,margin=margin(5,0,0,0)),
-    plot.subtitle = element_text(hjust = 0.5, size = 13, margin=margin(5,0,5,0)),
-    plot.caption = element_text(hjust = 0, size = 10, face = "italic"),
-    legend.text = element_text(size=10)
+    legend.key.width = unit(1, "cm"),
+    legend.key.height = unit(0.5, 'cm'),
+    legend.margin=margin(0,0,0,0),
+    legend.box.margin=margin(-5,-5,-5,-5),
+    plot.margin = unit(c(0.1,1,1,1), "cm"),
+    plot.title = element_text(face="bold", hjust = 0.5, size = 13,margin=margin(5,0,0,0)),
+    plot.subtitle = element_text(hjust = 0.5, size = 11, margin=margin(5,0,5,0)),
+    plot.caption = element_text(hjust = 0, size = 7, face = "italic"),
+    legend.text = element_text(size=9)
   )
 
 print("Saving Powell Plot:")
 ggsave("Powell24MS.png", width = 11, height = 8)
-logo_raw <- image_read("https://www.usbr.gov/lc/region/g4000/BofR-vert.png")
-crmms_p <- image_read("Powell24MS.png")
-test_plot <- image_composite(crmms_p,image_resize(logo_raw,"325"),offset = "+2860+2060")
-image_write(test_plot, "Powell24MS.png")
-image_write(image_convert(test_plot, format = "pdf"), "Powell24MS.pdf")
+tryCatch({
+    logo_raw <- image_read(file.path("data","BofR-vert.png"))
+    crmms_p <- image_read("Powell24MS.png")
+    test_plot <- image_composite(crmms_p,image_resize(logo_raw,"325"),offset = "+2860+2060")
+    image_write(test_plot, "Powell24MS.png")
+    image_write(image_convert(test_plot, format = "pdf"), "Powell24MS.pdf")
+}, error = function(e) {
+    message("Could not download or apply logo. Skipping image composition.")
+})
+
 
 ## Mead -------------------------------------------------------------------------
 m_breaks <- seq(900, 1250, 25)
 m_breaks2 <- seq(900, 1250, 5)
-yy <- c(1000, 1125) # NULL for default ylimit
-gg <-
-  ggplot(df_stat_m, aes(x = Date, fill = Cloud)) +
-  scale_fill_discrete(breaks = c(''), type = cloud_color) + #type = cloud_color) +
-  geom_ribbon(aes(ymin = cloud.min, ymax = cloud.max), alpha = 0.2) +
-  # ggplot(df_24MS, aes(x = Date)) +
+yy <- c(975, 1125) # NULL for default ylimit
+
+# Calculate date limits (using df_24MS$Date)
+min_date_limit <- min(df_24MS$Date, na.rm = TRUE)
+max_date_limit <- max(df_24MS$Date, na.rm = TRUE)
+
+# Construct the plot
+gg <- ggplot(mapping = aes(x = Date)) + # Minimal global aesthetic
   
-  geom_line(data = df_24MS_m, 
-            aes(x = Date, y = value, color = trace_labels, 
-                alpha = trace_labels, group = trace_labels,
-                linetype = trace_labels, size = trace_labels)) +
-  scale_color_manual(values = custom_colors,
-                     breaks = lab_names) +
-  scale_linetype_manual(values = custom_lt,
-                        breaks = lab_names) +
-  scale_size_manual(values = custom_size,
-                    breaks = lab_names) +
-  scale_alpha_manual(values = custom_alpha,
-                     breaks = lab_names) +
-  scale_x_yearmon(expand = c(0,0), breaks = unique(df_24MS$Date),
-                  minor_breaks = unique(df_24MS$Date),
-                  limits = c(min(df_24MS$Date), max(df_24MS$Date))) +
+  # Shading rectangle starting Dec 2026
+  geom_rect(
+    aes(xmin = as.yearmon("Dec 2026"), xmax = Inf, ymin = -Inf, ymax = Inf),
+    fill = 'grey90', alpha = 0.5, inherit.aes = FALSE
+  ) +
+  
+  # Data layers
+  geom_ribbon(data = df_stat_m_max,
+              aes(ymin = cloud.min, ymax = cloud.max, fill = Cloud),
+              alpha = 0.2) +
+  geom_ribbon(data = df_stat_m_min,
+              aes(ymin = cloud.min, ymax = cloud.max, fill = Cloud),
+              alpha = 0.2) +
+  geom_line(data = df_24MS_m,
+            aes(y = value, color = trace_labels, alpha = trace_labels,
+                group = trace_labels, linetype = trace_labels, size = trace_labels)) +
+  
+  # Scales
+  scale_fill_discrete(breaks = c(''), type = cloud_color) +
+  # CORRECTED: Use unname(lab_names) for the breaks to display the full label text
+  scale_color_manual(values = custom_colors, breaks = unname(lab_names)) +
+  scale_linetype_manual(values = custom_lt, breaks = unname(lab_names)) +
+  scale_size_manual(values = custom_size, breaks = unname(lab_names)) +
+  scale_alpha_manual(values = custom_alpha, breaks = unname(lab_names)) +
+  scale_x_yearmon(
+    expand = c(0,0),
+    breaks = unique(df_24MS$Date),
+    minor_breaks = unique(df_24MS$Date),
+    limits = c(min_date_limit, max_date_limit)
+  ) +
   scale_y_continuous(
     labels = scales::comma, breaks = m_breaks, minor_breaks = m_breaks2,
     limits = yy, expand = c(0,0),
@@ -446,82 +564,96 @@ gg <-
       name = "Storage (maf)"
     )
   ) +
+  # Labels, titles, and caption
   labs(y = "Pool Elevation (ft)", x = NULL, color = NULL, linetype = NULL,
        size = NULL,
        fill = NULL,
-       title = bquote('Lake Mead End-of-Month'~Elevations),
+       title = bquote('Lake Mead End-of-Month'~Elevations^1),
        subtitle = paste('Projections from', month_heading, '24-Month Study Inflow Scenarios'),
-       #caption = "The Drought Response Operations Agreement (DROA) is available online at https://www.usbr.gov/dcp/finaldocs.html.                  "
+       caption ='The Drought Response Operations Agreement (DROA) is available online at https://www.usbr.gov/dcp/finaldocs.html.
+       
+¹For modeling purposes, simulated years beyond 2026 assume a continuation of the 2007 Interim Guidelines including the 2024 Supplement to the 2007 Interim Guidelines (no additional SEIS
+conservation is assumed to occur after 2026), the 2019 Colorado River Basin Drought Contingency Plans, and Minute 323 including the Binational Water Scarcity Contingency Plan. With the 
+exception of certain provisions related to ICS recovery and Upper Basin Demand management, operations under these agreements are in effect through 2026.'
+       
+  )+
+  # Reference lines and annotations
+  geom_hline(yintercept = c(1110, 1090, 1045), colour = 'black', linetype = 'dashed') +
+  geom_hline(yintercept = c(1145, 1075, 1050, 1025), color = "black", linetype = "solid") +
+  geom_vline(xintercept = as.yearmon(c("Dec 2025")), size = 1, color = "#ffdc70", alpha = 0.8) +
+  geom_vline( # Vertical line at start of shading
+    xintercept = as.yearmon("Dec 2026"),
+    color = "gray30", 
+    linetype = "solid" 
   ) +
-  # tier stuff
-  geom_hline(
-    yintercept = c(1110, 1090, 1045), 
-    colour = 'black', linetype = 'dashed'
+  geom_vline(xintercept = as.yearmon(lubridate::ym(run_date) %m-% months(1)), size = 1, color = "black") +
+  
+  annotate("text", 
+           x = as.yearmon(lubridate::ym(run_date) - months(6)), y=1147.5, 
+           label="Surplus Condition (>1,145')", angle=00, size=3, hjust = 0) +
+  annotate("text", 
+           x = as.yearmon(lubridate::ym(run_date) - months(6)), y=1100, 
+           label="Normal Condition\n(1,075' to 1,145')", angle=00, size=3, hjust = 0) +
+  annotate("text", 
+           x = as.yearmon(lubridate::ym(run_date)), y=1107, 
+           label="Elevation 1,110 ft", angle=00, size=3, hjust = 0) +
+  annotate("text", 
+           x = as.yearmon(lubridate::ym(run_date)), y=1087, 
+           label="Elevation 1,090 ft", angle=00, size=3, hjust = 0) +
+  annotate("text", 
+           x = as.yearmon(lubridate::ym(run_date)), y=1042, 
+           label="Elevation 1,045 ft", angle=00, size=3, hjust = 0) +
+  annotate("text", 
+           x = as.yearmon(lubridate::ym(run_date) - months(6)), y=1073, 
+           label="Level 1", angle=00, size=3, hjust = 0) +
+  annotate("text", 
+           x = as.yearmon(lubridate::ym(run_date) - months(6)), y=1068, 
+           label="Shortage Condition", angle=00, size=3, hjust = 0) +
+  annotate("text", 
+           x = as.yearmon(lubridate::ym(run_date) - months(6)), y=1063, 
+           label="(1,050' to 1,075')", angle=00, size=3, hjust = 0) +
+  annotate("text", 
+           x = as.yearmon(lubridate::ym(run_date) - months(6)), y=1036, 
+           label="Level 2 \nShortage Condition\n(1,025' to 1,050')", angle=00, size=3, hjust = 0) +
+  annotate("text", 
+           x = as.yearmon(lubridate::ym(run_date) - months(6)), y=1015, 
+           label="Level 3 \nShortage Condition\n(<1,025')", angle=00, size=3, hjust = 0) +
+  
+  # Legend guides
+  guides(
+    alpha = 'none',
+    color = guide_legend(nrow = 5, order = 1),
+    linetype = guide_legend(nrow = 5, order = 1),
+    size = guide_legend(nrow = 5, order = 1)
   ) +
-  geom_hline(yintercept = c(1145, 1075, 1050, 1025), color = "black", linetype = 1) +
-  annotate("text", x = as.yearmon(ym(run_date) - months(6)),
-           y=1147.5, label="Surplus Condition (>1,145')", angle=00, size=3, hjust = 0) +
-  annotate("text", x = as.yearmon(ym(run_date) - months(6)),
-           y=1100, label="Normal Condition\n(1,075' to 1,145')", 
-           angle=00, size=3, hjust = 0) +
-  annotate("text", x = as.yearmon(ym(run_date)),
-           y=1107, label="Elevation 1,110 ft",
-           angle=00, size=3, hjust = 0) +
-  annotate("text", x = as.yearmon(ym(run_date)),
-           y=1087, label="Elevation 1,090 ft",
-           angle=00, size=3, hjust = 0) +
-  annotate("text", x = as.yearmon(ym(run_date)),
-           y=1042, label="Elevation 1,045 ft",
-           angle=00, size=3, hjust = 0) +
-  # annotate("text", x = as.yearmon(ym(run_date) - months(5)),
-  #          y=1083, label="Drought Contingency Plan Contributions\n(<1,090')",
-  #          angle=00, size=3, hjust = 0) +
-  # annotate("text", x = as.yearmon(ym(run_date) - months(6)),
-  #          y=1063, label="Shortage Condition\n(<1,075')",
-  #          angle=00, size=3, hjust = 0) +
-  annotate("text", x = as.yearmon(ym(run_date) - months(6)),
-           y=1070, label="Level 1 Shortage Condition\n(1,050' to 1,075')",
-           angle=00, size=3, hjust = 0) +
-  annotate("text", x = as.yearmon(ym(run_date) - months(6)),
-           y=1037, label="Level 2 Shortage Condition\n(1,025' to 1,050')",
-           angle=00, size=3, hjust = 0) +
-  annotate("text", x = as.yearmon(ym(run_date) - months(6)),
-           y=1015, label="Level 3 Shortage Condition\n(<1,025')",
-           angle=00, size=3, hjust = 0) +
-  geom_vline(
-    xintercept = as.yearmon(c("Dec 2024", "Dec 2025")),
-    size = 1, color = "#ffdc70",  #"#ffdc70" or "grey45"
-    alpha = 0.8
-  ) +
-  geom_vline(
-    xintercept = as.yearmon(ym(run_date) %m-% months(1)),
-    size = 1, color = "black"  #"#ffdc70" or "grey45"
-    # alpha = 0.8
-  ) +
+  
+  # Theme settings
   theme_bw(base_size = 14) +
-  guides(alpha = 'none',
-         color = guide_legend(nrow = 5, order = 1),
-         linetype = guide_legend(nrow = 5, order = 1),
-         size = guide_legend(nrow = 5, order = 1)
-         #, fill = guide_legend(order = 1)
-  ) +
   theme(
-    axis.text.x = element_text(angle = 90, vjust = 0.5), 
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
     legend.position = "bottom",
     legend.justification = "left",
-    legend.key.width = unit(1.2, "cm"),
-    plot.margin = unit(c(0.2,1,1,1), "cm"),
-    plot.title = element_text(face="bold", hjust = 0.5, size = 14,margin=margin(5,0,0,0)),
-    plot.subtitle = element_text(hjust = 0.5, size = 13, margin=margin(5,0,5,0)),
-    plot.caption = element_text(hjust = 0, size = 10, face = "italic"),
-    legend.text = element_text(size=10)
+    legend.key.width = unit(1, "cm"),
+    legend.key.height = unit(0.5, 'cm'),
+    legend.margin = margin(0,0,0,0),
+    legend.box.margin = margin(-5,-5,-5,-5),
+    plot.margin = unit(c(0.1,1,1,1), "cm"),
+    plot.title = element_text(face="bold", hjust = 0.5, size = 13, margin=margin(5,0,0,0)),
+    plot.subtitle = element_text(hjust = 0.5, size = 11, margin=margin(5,0,5,0)),
+    plot.caption = element_text(hjust = 0, size = 7, face = "italic"),
+    legend.text = element_text(size=9)
   )
+
 
 ggsave("Mead24MS.png", 
        width = 11, height = 8)
 
-crmms_m <- image_read("Mead24MS.png")
-logo_raw <- image_read("https://www.usbr.gov/lc/region/g4000/BofR-vert.png")
-test_plot <- image_composite(crmms_m,image_resize(logo_raw,"325"),offset = "+2860+2060")
-image_write(test_plot, "Mead24MS.png")
-image_write(image_convert(test_plot, format = "pdf"), "Mead24MS.pdf")
+tryCatch({
+    crmms_m <- image_read("Mead24MS.png")
+    logo_raw <- image_read(file.path("data","BofR-vert.png"))
+    test_plot <- image_composite(crmms_m,image_resize(logo_raw,"325"),offset = "+2860+2060")
+    image_write(test_plot, "Mead24MS.png")
+    image_write(image_convert(test_plot, format = "pdf"), "Mead24MS.pdf")
+}, error = function(e) {
+    message("Could not download or apply logo. Skipping image composition.")
+})
